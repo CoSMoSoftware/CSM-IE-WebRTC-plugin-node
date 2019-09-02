@@ -5,13 +5,12 @@
   "scripts": {
     "serve": "node node_modules/serve/bin/serve.js --port 8000 wtp",
     "test": "set PATH=wtp;%PATH% && node ./wtp/wtp.js",
-    "browserify": "browserify index.js --standalone webrtc-ie-shim -o dist/webrtc-ie-shim.js  -t [ babelify --presets [ es2015-ie ] ] && copy dist\\webrtc-ie-shim.js wtp\\resources\\  /Y"
+    "browserify": "browserify index.js --standalone webrtc-ie-shim -o ./dist/webrtc-ie-shim.js  -t [ babelify --presets [ es2015-ie ] ]"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "detect-browser": "^2.0.0",
-    "promise-polyfill": "^6.1.0"
+    "detect-browser": "^2.0.0"
   },
   "devDependencies": {
     "ansi-styles": "^3.2.0",

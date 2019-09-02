@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.webrtcIeShim = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.webrtcIeShim = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 exports.endianness = function () { return 'LE' };
 
 exports.hostname = function () {
@@ -236,115 +236,142 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],3:[function(require,module,exports){
-"use strict";
+'use strict';
 
-var browser = require("detect-browser").detect();
+var browser = require('detect-browser').detect();
 
 //If it is not internet exploer, do nothign
-if (browser.name === "ie") {
-	var makeInterface = function makeInterface(Base) {
-		//Interface with no constructor
-		var Interface = function Interface() {
-			throw new TypeError();
-		};
-		//Set name
-		Object.defineProperty(Interface, 'name', { enumerable: false, configurable: true, writable: false, value: Base.name });
-		//Create constructor and reset protocol chain
-		Interface.prototype = Object.create(Base.prototype, {
-			constructor: {
-				value: Interface,
-				configurable: true,
-				writable: false
-			}
-		});
-		//Fix protocol chain
-		Interface.__proto__ = Base.__proto__;
-		//Make prototype read only
-		Object.defineProperty(Interface, 'prototype', { writable: false });
-		//Ok
-		return Interface;
-	};
+if (browser.name === 'ie') {
 
-	//Helper functions to check video nodes
-	var checkNewNode = function checkNewNode(node) {
-		//If it is a video element
-		if (node.nodeName === 'video')
-			// Observe changes in the video element
-			return VideoRenderer.handle(node);
-		//Look in childs
-		for (var j = 0; j < node.childNodes.length; j++) {
-			checkNewNode(node.childNodes.item(j));
-		}
-	};
+    //Helper functions to check video nodes
+    var checkNewNode = function checkNewNode(node) {
+        //If it is a video element
+        if (node.nodeName.match(/video/i))
+            // Observe changes in the video element
+            return VideoRenderer.handle(node);
+        //Look in childs
+        for (var j = 0; j < node.childNodes.length; j++) {
+            checkNewNode(node.childNodes.item(j));
+        }
+    };
 
-	var checkRemovedNode = function checkRemovedNode(node) {
-		//If it is a video element
-		if (node.nodeName === 'video') return VideoRenderer.unhandle(node);
-		//Look in childs
-		for (var j = 0; j < node.childNodes.length; j++) {
-			checkRemovedNode(node.childNodes.item(j));
-		}
-	};
+    var checkRemovedNode = function checkRemovedNode(node) {
+        //If it is a video element
+        if (node.nodeName.match(/video/i)) return VideoRenderer.unhandle(node);
+        //Look in childs
+        for (var j = 0; j < node.childNodes.length; j++) {
+            checkRemovedNode(node.childNodes.item(j));
+        }
+    };
 
-	// DOM mutation observer to check when a new video element has been added to the DOM
+    var makeInterface = function makeInterface(Base) {
+        //Interface with no constructor
+        var Interface = function Interface() {
+            throw new TypeError();
+        };
+        //Set name
+        Object.defineProperty(Interface, 'name', {
+            enumerable: false,
+            configurable: true,
+            writable: false,
+            value: Base.name
+        });
+        //Create constructor and reset protocol chain
+        Interface.prototype = Object.create(Base.prototype, {
+            constructor: {
+                value: Interface,
+                configurable: true,
+                writable: false
+            }
+        });
+        //Fix protocol chain
+        Interface.__proto__ = Base.__proto__;
+        //Make prototype read only
+        Object.defineProperty(Interface, 'prototype', { writable: false });
+        //Ok
+        return Interface;
+    };
 
+    var defineGlobalProperty = function defineGlobalProperty(name, value) {
+        Object.defineProperty(window, name, {
+            enumerable: false,
+            configurable: true,
+            writable: true,
+            value: value
+        });
+    };
 
-	// Add objects to global
-	var MediaDevices = require("./lib/MediaDevices.js");
-	var VideoRenderer = require("./lib/VideoRenderer.js");
-	navigator.mediaDevices = new MediaDevices();
+    // Add objects to global
+    var WebRTCProxy = require('./lib/WebRTCProxy.js');
+    var MediaDevices = require('./lib/MediaDevices.js');
+    var VideoRenderer = require('./lib/VideoRenderer.js');
+    navigator.mediaDevices = new MediaDevices();
 
-	var RTCPeerConnection = require("./lib/RTCPeerConnection.js");
-	var RTCSessionDescription = require("./lib/RTCSessionDescription.js");
-	var RTCIceCandidate = require("./lib/RTCIceCandidate.js");
-	var RTCRtpTransceiver = require("./lib/RTCRtpTransceiver.js");
-	var RTCRtpReceiver = require("./lib/RTCRtpReceiver.js");
-	var RTCRtpSender = require("./lib/RTCRtpSender.js");
-	var RTCDataChannel = require("./lib/RTCDataChannel.js");
-	var MediaStream = require("./lib/MediaStream.js");
-	var MediaStreamTrack = require("./lib/MediaStreamTrack.js");
-	var Promise = require("promise-polyfill");
-	var EventTarget = require("./lib/EventTarget.js").EventTarget;
+    var RTCPeerConnection = require('./lib/RTCPeerConnection.js');
+    var RTCSessionDescription = require('./lib/RTCSessionDescription.js');
+    var RTCIceCandidate = require('./lib/RTCIceCandidate.js');
+    var RTCRtpTransceiver = require('./lib/RTCRtpTransceiver.js');
+    var RTCRtpReceiver = require('./lib/RTCRtpReceiver.js');
+    var RTCRtpSender = require('./lib/RTCRtpSender.js');
+    var RTCDataChannel = require('./lib/RTCDataChannel.js');
+    var MediaStream = require('./lib/MediaStream.js');
+    var MediaStreamTrack = require('./lib/MediaStreamTrack.js');
+    var EventTarget = require('./lib/EventTarget.js').EventTarget;
+    var WebRTCAdapter = {
+        //Method called by demand in IE for bind video elements
+        bindVideoElement: function bindVideoElement(element) {
+            checkNewNode(element);
+        },
 
-	Object.defineProperty(window, 'RTCPeerConnection', { enumerable: false, configurable: true, writable: true, value: RTCPeerConnection });
-	Object.defineProperty(window, 'RTCSessionDescription', { enumerable: false, configurable: true, writable: true, value: RTCSessionDescription });
-	Object.defineProperty(window, 'RTCIceCandidate', { enumerable: false, configurable: true, writable: true, value: RTCIceCandidate });
-	Object.defineProperty(window, 'MediaStream', { enumerable: false, configurable: true, writable: true, value: MediaStream });
-	Object.defineProperty(window, 'MediaStreamTrack', { enumerable: false, configurable: true, writable: true, value: makeInterface(MediaStreamTrack) });
-	Object.defineProperty(window, 'RTCRtpTransceiver', { enumerable: false, configurable: true, writable: true, value: makeInterface(RTCRtpTransceiver) });
-	Object.defineProperty(window, 'RTCRtpReceiver', { enumerable: false, configurable: true, writable: true, value: makeInterface(RTCRtpReceiver) });
-	Object.defineProperty(window, 'RTCRtpSender', { enumerable: false, configurable: true, writable: true, value: makeInterface(MediaStreamTrack) });
-	Object.defineProperty(window, 'RTCDataChannel', { enumerable: false, configurable: true, writable: true, value: makeInterface(RTCDataChannel) });
-	Object.defineProperty(window, 'Promise', { enumerable: false, configurable: true, writable: true, value: Promise });
-	Object.defineProperty(window, 'EventTarget', { enumerable: false, configurable: true, writable: true, value: EventTarget });var domObserver = new MutationObserver(function (mutations) {
-		for (var i = 0, numMutations = mutations.length; i < numMutations; i++) {
-			var mutation = mutations[i];
+        //Method called by demand in IE for unbind video elements
+        unBindVideoElement: function unBindVideoElement(element) {
+            checkRemovedNode(element);
+        }
+    };
 
-			// Check if there has been addition or deletion of nodes
-			if (mutation.type !== 'childList') continue;
+    defineGlobalProperty('RTCPeerConnection', RTCPeerConnection);
+    defineGlobalProperty('RTCSessionDescription', RTCSessionDescription);
+    defineGlobalProperty('RTCIceCandidate', RTCIceCandidate);
+    defineGlobalProperty('MediaStream', MediaStream);
+    defineGlobalProperty('MediaStreamTrack', makeInterface(MediaStreamTrack));
+    defineGlobalProperty('RTCRtpTransceiver', makeInterface(RTCRtpTransceiver));
+    defineGlobalProperty('RTCRtpReceiver', makeInterface(RTCRtpReceiver));
+    defineGlobalProperty('RTCRtpSender', makeInterface(RTCRtpSender));
+    defineGlobalProperty('RTCDataChannel', makeInterface(RTCDataChannel));
+    defineGlobalProperty('EventTarget', EventTarget);
+    defineGlobalProperty('WebRTCAdapter', WebRTCProxy ? WebRTCAdapter : null);
 
-			// Check added nodes.
-			for (var j = 0, numNodes = mutation.addedNodes.length; j < numNodes; j++) {
-				//Check node recursively
-				checkNewNode(mutation.addedNodes[j]);
-			} // Check removed nodes.
-			for (j = 0, numNodes = mutation.removedNodes.length; j < numNodes; j++) {
-				//Check node recursively
-				checkRemovedNode(mutation.removedNodes[j]);
-			}
-		}
-	});
+    // DOM mutation observer to check when a new video element has been added to the DOM
+    // TODO: Currently domObserver no observing, need to decide how to make it configurable to prevent performance issues.
+    var domObserver = new MutationObserver(function (mutations) {
+        for (var i = 0, numMutations = mutations.length; i < numMutations; i++) {
+            var mutation = mutations[i];
 
-	//Get all video elements already present
-	var videos = document.getElementsByTagName("video");
+            // Check if there has been addition or deletion of nodes
+            if (mutation.type !== 'childList') continue;
 
-	//Handle them
-	for (var i = 0; i < videos.length; ++i) {
-		VideoRenderer.handle(videos[i]);
-	}
+            // Check added nodes.
+            for (var j = 0, numNodes = mutation.addedNodes.length; j < numNodes; j++) {
+                //Check node recursively
+                checkNewNode(mutation.addedNodes[j]);
+            } // Check removed nodes.
+            for (j = 0, numNodes = mutation.removedNodes.length; j < numNodes; j++) {
+                //Check node recursively
+                checkRemovedNode(mutation.removedNodes[j]);
+            }
+        }
+    });
+
+    //Get all video elements already present
+    var videos = document.getElementsByTagName('video');
+
+    //Handle them
+    for (var i = 0; i < videos.length; ++i) {
+        VideoRenderer.handle(videos[i]);
+    }
 }
 
-},{"./lib/EventTarget.js":4,"./lib/MediaDevices.js":6,"./lib/MediaStream.js":7,"./lib/MediaStreamTrack.js":8,"./lib/RTCDataChannel.js":9,"./lib/RTCIceCandidate.js":10,"./lib/RTCPeerConnection.js":11,"./lib/RTCRtpReceiver.js":12,"./lib/RTCRtpSender.js":13,"./lib/RTCRtpTransceiver.js":14,"./lib/RTCSessionDescription.js":15,"./lib/VideoRenderer.js":16,"detect-browser":18,"promise-polyfill":19}],4:[function(require,module,exports){
+},{"./lib/EventTarget.js":4,"./lib/MediaDevices.js":6,"./lib/MediaStream.js":7,"./lib/MediaStreamTrack.js":8,"./lib/RTCDataChannel.js":9,"./lib/RTCIceCandidate.js":10,"./lib/RTCPeerConnection.js":11,"./lib/RTCRtpReceiver.js":12,"./lib/RTCRtpSender.js":13,"./lib/RTCRtpTransceiver.js":14,"./lib/RTCSessionDescription.js":15,"./lib/VideoRenderer.js":16,"./lib/WebRTCProxy.js":17,"detect-browser":18}],4:[function(require,module,exports){
 /**
  * @author Toru Nagashima <https://github.com/mysticatea>
  * @copyright 2015 Toru Nagashima. All rights reserved.
@@ -1108,14 +1135,13 @@ function InvalidStateError() {
 module.exports = InvalidStateError;
 
 },{}],6:[function(require,module,exports){
-"use strict";
+'use strict';
 
-var WebRTCProxy = require("./WebRTCProxy.js");
-var MediaStream = require("./MediaStream.js");
-var MediaStreamTrack = require("./MediaStreamTrack.js");
-var Promise = require("promise-polyfill");
-var EventTarget = require("./EventTarget.js").EventTarget;
-var defineEventAttribute = require("./EventTarget.js").defineEventAttribute;
+var WebRTCProxy = require('./WebRTCProxy.js');
+var MediaStream = require('./MediaStream.js');
+var MediaStreamTrack = require('./MediaStreamTrack.js');
+var EventTarget = require('./EventTarget.js').EventTarget;
+var defineEventAttribute = require('./EventTarget.js').defineEventAttribute;
 
 /*
 	interface MediaDevices : EventTarget {
@@ -1129,67 +1155,70 @@ var defineEventAttribute = require("./EventTarget.js").defineEventAttribute;
 	}
 */
 var MediaDevices = function MediaDevices() {
-	//Init event targetr
-	EventTarget.call(this);
+    //Init event targetr
+    EventTarget.call(this);
 };
 
 //Inherit from Event Target
 MediaDevices.prototype = Object.create(EventTarget.prototype, {
-	constructor: {
-		value: MediaDevices,
-		configurable: true,
-		writable: true
-	}
+    constructor: {
+        value: MediaDevices,
+        configurable: true,
+        writable: true
+    }
 });
 
 // Define Event Handlers
-defineEventAttribute(MediaDevices.prototype, "devicechange");
+defineEventAttribute(MediaDevices.prototype, 'devicechange');
 
 MediaDevices.prototype.enumerateDevices = function () {
-	throw "Not supported yet";
-
-	return new Promise(function (resolve, reject) {
-		resolve([]);
-	});
+    return new Promise(function (resolve, reject) {
+        resolve([]);
+    });
 };
 
 MediaDevices.prototype.getSupportedConstraints = function () {
-	throw "Not supported yet";
+    throw 'Not supported yet';
 };
 
 MediaDevices.prototype.getUserMedia = function (constraints) {
-	return new Promise(function (resolve, reject) {
-		var stream = new MediaStream();
-		//If we are being requested audio
-		if (constraints.audio) {
-			var options = {};
-			//Get new track
-			var track = WebRTCProxy.createLocalAudioTrack(options);
-			//Add it to the stream
-			stream.addTrack(new MediaStreamTrack(track));
-		}
-		//If we are being requested video
-		if (constraints.video) {
-			var options = {};
-			//Get new track
-			var track = WebRTCProxy.createLocalVideoTrack(options);
-			//Add it to the stream
-			stream.addTrack(new MediaStreamTrack(track));
-		}
-		//Done
-		resolve(stream);
-	});
+    return new Promise(function (resolve, reject) {
+        var stream = new MediaStream();
+        //If we are being requested audio
+        if (constraints.audio) {
+            var options = {};
+            //Get new track
+            var track = WebRTCProxy.createLocalAudioTrack(options);
+            //Add it to the stream
+            stream.addTrack(new MediaStreamTrack(track));
+        }
+        //If we are being requested video
+        if (constraints.video) {
+            var options = {};
+            //Get new track
+            var track = WebRTCProxy.createLocalVideoTrack(options);
+            //Add it to the stream
+            stream.addTrack(new MediaStreamTrack(track));
+        }
+        //Done
+        resolve(stream);
+    });
 };
 
-Object.defineProperty(MediaDevices, 'name', { enumerable: false, configurable: true, writable: false, value: "MediaDevices" });
+Object.defineProperty(MediaDevices, 'name', {
+    enumerable: false,
+    configurable: true,
+    writable: false,
+    value: 'MediaDevices'
+});
 Object.defineProperty(MediaDevices, 'prototype', { writable: false });
 module.exports = MediaDevices;
 
-},{"./EventTarget.js":4,"./MediaStream.js":7,"./MediaStreamTrack.js":8,"./WebRTCProxy.js":17,"promise-polyfill":19}],7:[function(require,module,exports){
-"use strict";
+},{"./EventTarget.js":4,"./MediaStream.js":7,"./MediaStreamTrack.js":8,"./WebRTCProxy.js":17}],7:[function(require,module,exports){
+'use strict';
 
-var EventTarget = require("./EventTarget.js").EventTarget;
-var defineEventAttribute = require("./EventTarget.js").defineEventAttribute;
+var EventTarget = require('./EventTarget.js').EventTarget;
+var defineEventAttribute = require('./EventTarget.js').defineEventAttribute;
 /*
 [Exposed=Window,
  Constructor,
@@ -1212,103 +1241,118 @@ interface MediaStream : EventTarget {
 var count = 0;
 
 var MediaStream = function MediaStream(label, tracks) {
-	//Init event targetr
-	EventTarget.call(this);
+    //Init event target
+    EventTarget.call(this);
 
-	//Private vars
-	this.priv = {
-		tracks: {}
-	};
+    //Private vars
+    this.priv = {
+        tracks: {}
+    };
 
-	//Add input tracks to our map
-	if (tracks) for (var i = 0; i < tracks.length; ++i) {
-		this.priv.tracks[tracks[i].id] = tracks[i];
-	}var id = label || "stream-" + count++;
+    //Add input tracks to our map
+    if (tracks) for (var i = 0; i < tracks.length; ++i) {
+        this.priv.tracks[tracks[i].id] = tracks[i];
+    }var id = label || 'stream-' + count++;
 
-	Object.defineProperty(this, 'id', { enumerable: true, configurable: false, writable: false, value: id });
-	Object.defineProperty(this, 'active', { enumerable: true, configurable: false, writable: false, value: true });
+    Object.defineProperty(this, 'id', { enumerable: true, configurable: false, writable: false, value: id });
+    Object.defineProperty(this, 'active', { enumerable: true, configurable: false, writable: false, value: true });
 
-	return this;
+    return this;
 };
 
 //Inherit from Event Target
 MediaStream.prototype = Object.create(EventTarget.prototype, {
-	constructor: {
-		value: MediaStream,
-		configurable: true,
-		writable: true
-	}
+    constructor: {
+        value: MediaStream,
+        configurable: true,
+        writable: true
+    }
 });
 MediaStream.__proto__ = EventTarget;
 
 // Define Event Handlers
-defineEventAttribute(MediaStream.prototype, "addtrack");
-defineEventAttribute(MediaStream.prototype, "removetrack");
+defineEventAttribute(MediaStream.prototype, 'addtrack');
+defineEventAttribute(MediaStream.prototype, 'removetrack');
 
 MediaStream.prototype.getAudioTracks = function () {
-	var arr = [];
-	for (var id in this.priv.tracks) {
-		if (this.priv.tracks[id].kind === "audio") arr.push(this.priv.tracks[id]);
-	}return arr;
+    var arr = [];
+    for (var id in this.priv.tracks) {
+        if (this.priv.tracks[id].kind === 'audio') {
+            arr.push(this.priv.tracks[id]);
+        }
+    }return arr;
 };
 
 MediaStream.prototype.getVideoTracks = function () {
-	var arr = [];
-	for (var id in this.priv.tracks) {
-		if (this.priv.tracks[id].kind === "video") arr.push(this.priv.tracks[id]);
-	}return arr;
+    var arr = [];
+    for (var id in this.priv.tracks) {
+        if (this.priv.tracks[id].kind === 'video') {
+            arr.push(this.priv.tracks[id]);
+        }
+    }return arr;
 };
 
 MediaStream.prototype.getTracks = function () {
-	var arr = [];
-	for (var id in this.priv.tracks) {
-		arr.push(this.priv.tracks[id]);
-	}return arr;
+    var arr = [];
+    for (var id in this.priv.tracks) {
+        arr.push(this.priv.tracks[id]);
+    }
+    return arr;
 };
 
 MediaStream.prototype.getTrackById = function (id) {
-	return this.priv.tracks[id];
+    return this.priv.tracks[id];
 };
 
 MediaStream.prototype.addTrack = function (track) {
-	//Check if already present
-	if (this.priv.tracks.hasOwnProperty(track.id)) return;
-	//Add to track
-	this.priv.tracks[track.id] = track;
-	//Create event
-	var event = document.createEvent("Event");
-	event.initEvent("addtrack", false, false);
-	event.track = track;
-	//Fire it
-	this.dispatchEvent(event);
+    //Check if already present
+    if (this.priv.tracks.hasOwnProperty(track.id)) return;
+    //Add to track
+    this.priv.tracks[track.id] = track;
+
+    if (typeof this.priv.tracks[track.id].enabled !== 'boolean') {
+        this.priv.tracks[track.id].enabled = true;
+    }
+
+    //Create event
+    var event = document.createEvent('Event');
+    event.initEvent('addtrack', false, false);
+    event.track = track;
+    //Fire it
+    this.dispatchEvent(event);
 };
 
 MediaStream.prototype.removeTrack = function (track) {
-	//Check if it is notalready present
-	if (!this.priv.tracks.hasOwnProperty(track.id)) return;
-	//Add to track
-	delete this.priv.tracks[track.id];
-	//Create event
-	var event = document.createEvent("Event");
-	event.initEvent("removetrack", false, false);
-	event.track = track;
-	//Fire it
-	this.dispatchEvent(event);
+    //Check if it is not already present
+    if (!this.priv.tracks.hasOwnProperty(track.id)) return;
+    //Add to track
+    delete this.priv.tracks[track.id];
+    //Create event
+    var event = document.createEvent('Event');
+    event.initEvent('removetrack', false, false);
+    event.track = track;
+    //Fire it
+    this.dispatchEvent(event);
 };
 
 MediaStream.prototype.clone = function () {
-	return new MediaStream(this.getTracks());
+    return new MediaStream(this.getTracks());
 };
 
-Object.defineProperty(MediaStream, 'name', { enumerable: false, configurable: true, writable: false, value: "MediaStream" });
+Object.defineProperty(MediaStream, 'name', {
+    enumerable: false,
+    configurable: true,
+    writable: false,
+    value: 'MediaStream'
+});
 Object.defineProperty(MediaStream, 'prototype', { writable: false });
 module.exports = MediaStream;
 
 },{"./EventTarget.js":4}],8:[function(require,module,exports){
-"use strict";
+'use strict';
 
-var EventTarget = require("./EventTarget.js").EventTarget;
-var defineEventAttribute = require("./EventTarget.js").defineEventAttribute;
+var EventTarget = require('./EventTarget.js').EventTarget;
+var defineEventAttribute = require('./EventTarget.js').defineEventAttribute;
 /*
 [Exposed=Window]
 interface MediaStreamTrack : EventTarget {
@@ -1336,66 +1380,81 @@ partial interface MediaStreamTrack {
 };
 */
 var MediaStreamTrack = function MediaStreamTrack(track) {
-	//Init event targetr
-	EventTarget.call(this);
+    //Init event targetr
+    EventTarget.call(this);
 
-	//Private vars
-	var priv = this.priv = {
-		track: track,
-		muted: false
-	};
+    //Private vars
+    var priv = this.priv = {
+        track: track,
+        muted: false,
+        enabled: true
+    };
 
-	Object.defineProperty(this, 'kind', { enumerable: true, configurable: false, get: function get() {
-			return priv.track.kind;
-		} });
-	Object.defineProperty(this, 'id', { enumerable: true, configurable: false, get: function get() {
-			return priv.track.id;
-		} });
-	Object.defineProperty(this, 'label', { enumerable: true, configurable: false, get: function get() {
-			return priv.track.id;
-		} });
-	Object.defineProperty(this, 'enabled', { enumerable: true, configurable: false, get: function get() {
-			return priv.track.enabled;
-		}, set: function set(enabled) {
-			priv.track.enabled = !!enabled;
-		} });
-	Object.defineProperty(this, 'muted', { enumerable: true, configurable: false, get: function get() {
-			return priv.muted;
-		} });
-	Object.defineProperty(this, 'readyState', { enumerable: true, configurable: false, get: function get() {
-			return priv.track.state;
-		} });
-	Object.defineProperty(this, 'isolated', { enumerable: true, configurable: false, get: function get() {
-			return false;
-		} });
+    Object.defineProperty(this, 'kind', {
+        enumerable: true, configurable: false, get: function get() {
+            return priv.track.kind;
+        }
+    });
+    Object.defineProperty(this, 'id', {
+        enumerable: true, configurable: false, get: function get() {
+            return priv.track.id;
+        }
+    });
+    Object.defineProperty(this, 'label', {
+        enumerable: true, configurable: false, get: function get() {
+            return priv.track.id;
+        }
+    });
+    Object.defineProperty(this, 'enabled', {
+        enumerable: true, configurable: false, get: function get() {
+            return priv.enabled;
+        }, set: function set(enabled) {
+            priv.enabled = !!enabled;
+        }
+    });
+    Object.defineProperty(this, 'muted', {
+        enumerable: true, configurable: false, get: function get() {
+            return priv.muted;
+        }
+    });
+    Object.defineProperty(this, 'readyState', {
+        enumerable: true, configurable: false, get: function get() {
+            return priv.track.state;
+        }
+    });
+    Object.defineProperty(this, 'isolated', {
+        enumerable: true, configurable: false, get: function get() {
+            return false;
+        }
+    });
 
-	return this;
+    return this;
 };
 
 //Inherit from Event Target
 MediaStreamTrack.prototype = Object.create(EventTarget.prototype, {
-	constructor: {
-		value: MediaStreamTrack,
-		configurable: true,
-		writable: false
-	}
+    constructor: {
+        value: MediaStreamTrack,
+        configurable: true,
+        writable: false
+    }
 });
 
 MediaStreamTrack.__proto__ = EventTarget;
 
 // Define Event Handlers
 //TODO: fire them somehow
-defineEventAttribute(MediaStreamTrack.prototype, "mute");
-defineEventAttribute(MediaStreamTrack.prototype, "unmute");
-defineEventAttribute(MediaStreamTrack.prototype, "ended");
-defineEventAttribute(MediaStreamTrack.prototype, "isolationchange");
+defineEventAttribute(MediaStreamTrack.prototype, 'mute');
+defineEventAttribute(MediaStreamTrack.prototype, 'unmute');
+defineEventAttribute(MediaStreamTrack.prototype, 'ended');
+defineEventAttribute(MediaStreamTrack.prototype, 'isolationchange');
 
 MediaStreamTrack.prototype.clone = function () {
-	return null;
+    return null;
 };
 
 MediaStreamTrack.prototype.stop = function () {
-	this.priv.track.stop();
+    this.priv.track.stop();
 };
 
 MediaStreamTrack.prototype.getCapabilities = function () {};
@@ -1406,7 +1465,12 @@ MediaStreamTrack.prototype.getSettings = function () {};
 
 MediaStreamTrack.prototype.applyConstraints = function () {};
 
-Object.defineProperty(MediaStreamTrack, 'name', { enumerable: false, configurable: true, writable: false, value: "MediaStreamTrack" });
+Object.defineProperty(MediaStreamTrack, 'name', {
+    enumerable: false,
+    configurable: true,
+    writable: false,
+    value: 'MediaStreamTrack'
+});
 module.exports = MediaStreamTrack;
 
 },{"./EventTarget.js":4}],9:[function(require,module,exports){
@@ -1762,7 +1826,6 @@ var RTCRtpSender = require("./RTCRtpSender.js");
 var RTCRtpReceiver = require("./RTCRtpReceiver.js");
 var RTCRtpTransceiver = require("./RTCRtpTransceiver.js");
 var DataChannel = require("./RTCDataChannel.js");
-var Promise = require("promise-polyfill");
 var InvalidStateError = require("./InvalidStateError.js");
 var EventTarget = require("./EventTarget.js").EventTarget;
 var defineEventAttribute = require("./EventTarget.js").defineEventAttribute;
@@ -2372,10 +2435,8 @@ Object.defineProperty(RTCPeerConnection, 'RTCPeerConnection', { enumerable: fals
 Object.defineProperty(RTCPeerConnection, 'prototype', { writable: false });
 module.exports = RTCPeerConnection;
 
-},{"./EventTarget.js":4,"./InvalidStateError.js":5,"./MediaStreamTrack.js":8,"./RTCDataChannel.js":9,"./RTCIceCandidate.js":10,"./RTCRtpReceiver.js":12,"./RTCRtpSender.js":13,"./RTCRtpTransceiver.js":14,"./RTCSessionDescription.js":15,"./WebRTCProxy.js":17,"promise-polyfill":19}],12:[function(require,module,exports){
-"use strict";
-
-var Promise = require("promise-polyfill");
+},{"./EventTarget.js":4,"./InvalidStateError.js":5,"./MediaStreamTrack.js":8,"./RTCDataChannel.js":9,"./RTCIceCandidate.js":10,"./RTCRtpReceiver.js":12,"./RTCRtpSender.js":13,"./RTCRtpTransceiver.js":14,"./RTCSessionDescription.js":15,"./WebRTCProxy.js":17}],12:[function(require,module,exports){
+'use strict';
 
 /*
 [Exposed=Window]
@@ -2394,46 +2455,57 @@ interface RTCRtpReceiver {
  */
 
 var RTCRtpReceiver = function RTCRtpReceiver(track) {
-	var priv = {
-		track: track
-	};
+    var priv = {
+        track: track
+    };
 
-	//Read only
-	Object.defineProperty(this, "track", { enumerable: true, configurable: false, get: function get() {
-			return priv.track;
-		} });
-	//Not implemented
-	Object.defineProperty(this, "transport", { enumerable: true, configurable: false, get: function get() {
-			return null;
-		} });
-	Object.defineProperty(this, "rtcpTransport", { enumerable: true, configurable: false, get: function get() {
-			return null;
-		} });
+    //Read only
+    Object.defineProperty(this, 'track', {
+        enumerable: true, configurable: false, get: function get() {
+            return priv.track;
+        }
+    });
+    //Not implemented
+    Object.defineProperty(this, 'transport', {
+        enumerable: true, configurable: false, get: function get() {
+            return null;
+        }
+    });
+    Object.defineProperty(this, 'rtcpTransport', {
+        enumerable: true, configurable: false, get: function get() {
+            return null;
+        }
+    });
 };
 
 RTCRtpReceiver.getCapabilities = function (kind) {
-	throw "Not implemented yet";
+    throw 'Not implemented yet';
 };
 
 RTCRtpReceiver.getParameters = function () {
-	throw "Not implemented yet";
+    throw 'Not implemented yet';
 };
 
 RTCRtpReceiver.getContributingSources = function () {
-	throw "Not implemented yet";
+    throw 'Not implemented yet';
 };
 RTCRtpReceiver.getSynchronizationSources = function () {
-	throw "Not implemented yet";
+    throw 'Not implemented yet';
 };
 RTCRtpReceiver.getStats = function () {
-	return Promise.reject(new Error("Not implemented yet"));
+    return Promise.reject(new Error('Not implemented yet'));
 };
 
-Object.defineProperty(RTCRtpReceiver, 'name', { enumerable: false, configurable: true, writable: false, value: "RTCRtpReceiver" });
+Object.defineProperty(RTCRtpReceiver, 'name', {
+    enumerable: false,
+    configurable: true,
+    writable: false,
+    value: 'RTCRtpReceiver'
+});
 Object.defineProperty(RTCRtpReceiver, 'prototype', { writable: false });
 module.exports = RTCRtpReceiver;
 
-},{"promise-polyfill":19}],13:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 
 /*
@@ -2711,7 +2783,7 @@ VideoRenderer.prototype.close = function () {
 	//Hide video object
 	this.hide();
 	//Unobserver video element
-	videoObserver.unobserve(this.video);
+	videoObserver.disconnect();
 	//Remove srcObject property
 	Object.defineProperty(this.video, 'srcObject', {});
 	Object.defineProperty(this.video, 'videoWidth', {});
@@ -2727,7 +2799,7 @@ VideoRenderer.handle = function (video) {
 
 VideoRenderer.unhandle = function (video) {
 	if (video.videoRenderer) {
-		video.videoRender.close();
+		video.videoRenderer.close();
 		delete video.videoRenderer;
 	}
 };
@@ -2755,16 +2827,21 @@ VideoRenderer.prototype.hide = function () {
 module.exports = VideoRenderer;
 
 },{}],17:[function(require,module,exports){
-"use strict";
+'use strict';
 
-var browser = require("detect-browser").detect();
+var browser = require('detect-browser').detect();
 
-var WebRTCProxy;
+var WebRTCProxy = null;
 
-//If it is internet exploer
-if (browser.name === "ie")
-	// Create singleton
-	WebRTCProxy = new ActiveXObject("Cosmo.WebRTCProxy.1");
+//If it is internet explorer
+if (browser.name === 'ie') {
+    // Create singleton
+    try {
+        WebRTCProxy = new ActiveXObject('Cosmo.WebRTCProxy.1');
+    } catch (e) {
+        console.error('IE WebRTC Plugin not installed');
+    }
+}
 
 module.exports = WebRTCProxy;
 
@@ -2943,240 +3020,5 @@ module.exports = {
 };
 
 }).call(this,require('_process'))
-},{"_process":2,"os":1}],19:[function(require,module,exports){
-(function (root) {
-
-  // Store setTimeout reference so promise-polyfill will be unaffected by
-  // other code modifying setTimeout (like sinon.useFakeTimers())
-  var setTimeoutFunc = setTimeout;
-
-  function noop() {}
-  
-  // Polyfill for Function.prototype.bind
-  function bind(fn, thisArg) {
-    return function () {
-      fn.apply(thisArg, arguments);
-    };
-  }
-
-  function Promise(fn) {
-    if (!(this instanceof Promise)) throw new TypeError('Promises must be constructed via new');
-    if (typeof fn !== 'function') throw new TypeError('not a function');
-    this._state = 0;
-    this._handled = false;
-    this._value = undefined;
-    this._deferreds = [];
-
-    doResolve(fn, this);
-  }
-
-  function handle(self, deferred) {
-    while (self._state === 3) {
-      self = self._value;
-    }
-    if (self._state === 0) {
-      self._deferreds.push(deferred);
-      return;
-    }
-    self._handled = true;
-    Promise._immediateFn(function () {
-      var cb = self._state === 1 ? deferred.onFulfilled : deferred.onRejected;
-      if (cb === null) {
-        (self._state === 1 ? resolve : reject)(deferred.promise, self._value);
-        return;
-      }
-      var ret;
-      try {
-        ret = cb(self._value);
-      } catch (e) {
-        reject(deferred.promise, e);
-        return;
-      }
-      resolve(deferred.promise, ret);
-    });
-  }
-
-  function resolve(self, newValue) {
-    try {
-      // Promise Resolution Procedure: https://github.com/promises-aplus/promises-spec#the-promise-resolution-procedure
-      if (newValue === self) throw new TypeError('A promise cannot be resolved with itself.');
-      if (newValue && (typeof newValue === 'object' || typeof newValue === 'function')) {
-        var then = newValue.then;
-        if (newValue instanceof Promise) {
-          self._state = 3;
-          self._value = newValue;
-          finale(self);
-          return;
-        } else if (typeof then === 'function') {
-          doResolve(bind(then, newValue), self);
-          return;
-        }
-      }
-      self._state = 1;
-      self._value = newValue;
-      finale(self);
-    } catch (e) {
-      reject(self, e);
-    }
-  }
-
-  function reject(self, newValue) {
-    self._state = 2;
-    self._value = newValue;
-    finale(self);
-  }
-
-  function finale(self) {
-    if (self._state === 2 && self._deferreds.length === 0) {
-      Promise._immediateFn(function() {
-        if (!self._handled) {
-          Promise._unhandledRejectionFn(self._value);
-        }
-      });
-    }
-
-    for (var i = 0, len = self._deferreds.length; i < len; i++) {
-      handle(self, self._deferreds[i]);
-    }
-    self._deferreds = null;
-  }
-
-  function Handler(onFulfilled, onRejected, promise) {
-    this.onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : null;
-    this.onRejected = typeof onRejected === 'function' ? onRejected : null;
-    this.promise = promise;
-  }
-
-  /**
-   * Take a potentially misbehaving resolver function and make sure
-   * onFulfilled and onRejected are only called once.
-   *
-   * Makes no guarantees about asynchrony.
-   */
-  function doResolve(fn, self) {
-    var done = false;
-    try {
-      fn(function (value) {
-        if (done) return;
-        done = true;
-        resolve(self, value);
-      }, function (reason) {
-        if (done) return;
-        done = true;
-        reject(self, reason);
-      });
-    } catch (ex) {
-      if (done) return;
-      done = true;
-      reject(self, ex);
-    }
-  }
-
-  Promise.prototype['catch'] = function (onRejected) {
-    return this.then(null, onRejected);
-  };
-
-  Promise.prototype.then = function (onFulfilled, onRejected) {
-    var prom = new (this.constructor)(noop);
-
-    handle(this, new Handler(onFulfilled, onRejected, prom));
-    return prom;
-  };
-
-  Promise.all = function (arr) {
-    return new Promise(function (resolve, reject) {
-      if (!arr || typeof arr.length === 'undefined') throw new TypeError('Promise.all accepts an array');
-      var args = Array.prototype.slice.call(arr);
-      if (args.length === 0) return resolve([]);
-      var remaining = args.length;
-
-      function res(i, val) {
-        try {
-          if (val && (typeof val === 'object' || typeof val === 'function')) {
-            var then = val.then;
-            if (typeof then === 'function') {
-              then.call(val, function (val) {
-                res(i, val);
-              }, reject);
-              return;
-            }
-          }
-          args[i] = val;
-          if (--remaining === 0) {
-            resolve(args);
-          }
-        } catch (ex) {
-          reject(ex);
-        }
-      }
-
-      for (var i = 0; i < args.length; i++) {
-        res(i, args[i]);
-      }
-    });
-  };
-
-  Promise.resolve = function (value) {
-    if (value && typeof value === 'object' && value.constructor === Promise) {
-      return value;
-    }
-
-    return new Promise(function (resolve) {
-      resolve(value);
-    });
-  };
-
-  Promise.reject = function (value) {
-    return new Promise(function (resolve, reject) {
-      reject(value);
-    });
-  };
-
-  Promise.race = function (values) {
-    return new Promise(function (resolve, reject) {
-      for (var i = 0, len = values.length; i < len; i++) {
-        values[i].then(resolve, reject);
-      }
-    });
-  };
-
-  // Use polyfill for setImmediate for performance gains
-  Promise._immediateFn = (typeof setImmediate === 'function' && function (fn) { setImmediate(fn); }) ||
-    function (fn) {
-      setTimeoutFunc(fn, 0);
-    };
-
-  Promise._unhandledRejectionFn = function _unhandledRejectionFn(err) {
-    if (typeof console !== 'undefined' && console) {
-      console.warn('Possible Unhandled Promise Rejection:', err); // eslint-disable-line no-console
-    }
-  };
-
-  /**
-   * Set the immediate function to execute callbacks
-   * @param fn {function} Function to execute
-   * @deprecated
-   */
-  Promise._setImmediateFn = function _setImmediateFn(fn) {
-    Promise._immediateFn = fn;
-  };
-
-  /**
-   * Change the function to execute on unhandled rejection
-   * @param {function} fn Function to execute on unhandled rejection
-   * @deprecated
-   */
-  Promise._setUnhandledRejectionFn = function _setUnhandledRejectionFn(fn) {
-    Promise._unhandledRejectionFn = fn;
-  };
-  
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Promise;
-  } else if (!root.Promise) {
-    root.Promise = Promise;
-  }
-
-})(this);
-
-},{}]},{},[3])(3)
+},{"_process":2,"os":1}]},{},[3])(3)
 });
