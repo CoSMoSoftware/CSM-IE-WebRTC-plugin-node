@@ -1,16 +1,20 @@
 # CSM-IE-WebRTC shim
-WebRTC shim for IE based on the [CSM-IE-WebRTC-plugin](https://github.com/CoSMoSoftware/CSM-IE-WebRTC-plugin). The plugin should be compiled, installed and registered first, befor eusing this shim.
+WebRTC shim for IE based on the
+[CSM-IE-WebRTC-plugin](https://github.com/CoSMoSoftware/CSM-IE-WebRTC-plugin).
+The plugin should be compiled, installed and registered first, before using this shim.
 
-## WebRTC Web Platform Test 
-```
-TOTAL [271/1099]
-```
+## Prerequesite
 
-## Install and package
+Enable ActiveX in IE11
+https://support.microsoft.com/en-us/help/17469/windows-internet-explorer-use-activex-controls
+
+Install Node.js
+
+## Install and package the JS layer
 
 Warning, this supposes that you have compiled, installed and registered the ActiveX plugin first.
 
-Install dev depencies (brorserify and babel) globaly:
+Install dev depencies (browserify and babel) globaly:
 ```
 npm install --only=dev -g
 ```
@@ -22,21 +26,30 @@ npm install
 
 Create bundled package (not minimized):
 ```
-npm run-script broserify
+npm run-script browserify
 ```
 
-## Run WTP tests
-```
-npm test
-```
 ## Usage
 
 Just add the bundled js package into your page:
 ```html
 <script src="dist/webrtc-ie-shim.js" type="text/javascript" async></script>
 ```
+
+## Validation: Run WTP tests
+The W3C test suite (WPT) has ben modified to use this shim and the plugin.
+See \wpt\README.md for more info.
+
+```
+npm test
+```
+
+Results as 2018
+```
+TOTAL 2018 [271/1099]
+```
  
-## Documentation
+# Documentation
 The following webrtc 1.0 apis are supported:
 
 - MediaDevices
@@ -134,7 +147,7 @@ The following webrtc 1.0 apis are supported:
     //TODO: Promise<RTCStatsReport> getStats();
 ```
 
-## License
+# License
 
 Apache License Version 2.0, 
 January 2004
