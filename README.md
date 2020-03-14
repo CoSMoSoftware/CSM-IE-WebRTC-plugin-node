@@ -46,9 +46,9 @@ npm test
 
 Results
 ```
-         [ie |cr |fi |eg |TOTAL]
-2018 m65 [270|360|394| 99| 1099]
-2020 m73 [272|759|571|   | 1099]
+         [ie |cr |fi |eg |sa |TOTAL]
+2018 m65 [270|360|394| 99|   | 1099]
+2020 m73 [272|759|571|   |   | 1099]
 ```
  
 # Documentation
@@ -61,7 +61,9 @@ The following webrtc 1.0 apis are supported:
 	//TODO: MediaTrackSupportedConstraints getSupportedConstraints();
 	Promise<MediaStream>		getUserMedia(optional MediaStreamConstraints constraints);
 ```
-- RTCPeerConnection
+- RTCPeerConnection [spec](https://www.w3.org/TR/webrtc/#peer-to-peer-connections),
+[idl 1](https://www.w3.org/TR/webrtc/#interface-definition),
+[idl 2](https://www.w3.org/TR/webrtc/#rtcpeerconnection-interface-extensions)
 ```
 	Promise<RTCSessionDescriptionInit> createOffer(optional RTCOfferOptions options);
 	Promise<RTCSessionDescriptionInit> createAnswer(optional RTCAnswerOptions options);
@@ -84,7 +86,9 @@ The following webrtc 1.0 apis are supported:
 	readonly attribute RTCIceConnectionState  iceConnectionState;
 	readonly attribute RTCPeerConnectionState connectionState;
 	//TODO: readonly attribute boolean?               canTrickleIceCandidates;
-	static sequence<RTCIceServer>      getDefaultIceServers();
+        //TODO: void restartIce();
+
+	static sequence<RTCIceServer>      getDefaultIceServers(); **
 	//TODO: RTCConfiguration                   getConfiguration();
 	//TODO: void                               setConfiguration(RTCConfiguration configuration);
 	void                               close();
@@ -137,17 +141,42 @@ The following webrtc 1.0 apis are supported:
     //TODO: Promise<void>          applyConstraints(optional MediaTrackConstraints constraints);
     //TODO: attribute EventHandler          onoverconstrained;
 ```
-- RTPSender
+- RTPSender [idl](https://www.w3.org/TR/webrtc/#rtcrtpsender-interface)
 ```
     readonly attribute MediaStreamTrack? track;
     //TODO: readonly attribute RTCDtlsTransport? transport;
-    //TODO: readonly attribute RTCDtlsTransport? rtcpTransport;
+    //TODO: readonly attribute RTCDtlsTransport? rtcpTransport; **
     //TODO: static RTCRtpCapabilities getCapabilities(DOMString kind);
     //TODO: Promise<void>           setParameters(optional RTCRtpParameters parameters);
     //TODO: RTCRtpParameters        getParameters();
     //TODO: Promise<void>           replaceTrack(MediaStreamTrack? withTrack);
+    //TODO: void                    setStreams(MediaStream... streams);
     //TODO: Promise<RTCStatsReport> getStats();
 ```
+- RTPReceiver [idl](https://www.w3.org/TR/webrtc/#rtcrtpreceiver-interface)
+```
+  readonly attribute MediaStreamTrack track;
+  readonly attribute RTCDtlsTransport? transport;
+  static RTCRtpCapabilities? getCapabilities(DOMString kind);
+  RTCRtpReceiveParameters getParameters();
+  sequence<RTCRtpContributingSource> getContributingSources();
+  sequence<RTCRtpSynchronizationSource> getSynchronizationSources();
+  Promise<RTCStatsReport> getStats();
+```
+- RTPTransceiver
+```
+  readonly attribute DOMString? mid;
+  [SameObject] readonly attribute RTCRtpSender sender;
+  [SameObject] readonly attribute RTCRtpReceiver receiver;
+  attribute RTCRtpTransceiverDirection direction;
+  readonly attribute RTCRtpTransceiverDirection? currentDirection;
+  void stop();
+  void setCodecPreferences(sequence<RTCRtpCodecCapability> codecs);
+```
+- Stats
+- DTMF
+- DataChannel
+
 
 # License
 
