@@ -44,9 +44,11 @@ See \wpt\README.md for more info.
 npm test
 ```
 
-Results as 2018
+Results
 ```
-TOTAL 2018 [271/1099]
+         [ie |cr |fi |eg |TOTAL]
+2018 m65 [270|360|394| 99| 1099]
+2020 m73 [272|759|571|   | 1099]
 ```
  
 # Documentation
