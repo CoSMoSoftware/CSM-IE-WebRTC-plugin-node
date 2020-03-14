@@ -44,4 +44,4 @@ In order to change the browser, edit the `wpt\wpt.js` and set the target browser
 	const driver = await new Builder ().forBrowser ('internet explorer').build ();
 ```
 
-You can set (at least) `nternet explorer` `chrome` or `firefox`
+You can set (at least) `internet explorer` `chrome` or `firefox`
