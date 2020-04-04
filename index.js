@@ -15,6 +15,7 @@ if (browser.name === "ie")
 	var RTCRtpReceiver		= require("./lib/RTCRtpReceiver.js");
 	var RTCRtpSender		= require("./lib/RTCRtpSender.js");
 	var RTCDataChannel		= require("./lib/RTCDataChannel.js");
+	var RTCStatsReport		= require("./lib/RTCStatsReport.js");
 	var MediaStream			= require("./lib/MediaStream.js");
 	var MediaStreamTrack		= require("./lib/MediaStreamTrack.js");
 	var Promise			= require("promise-polyfill");
@@ -51,6 +52,7 @@ if (browser.name === "ie")
 	Object.defineProperty(window, 'RTCRtpReceiver'		, { enumerable: false, configurable: true, writable: true, value: makeInterface(RTCRtpReceiver)		});
 	Object.defineProperty(window, 'RTCRtpSender'		, { enumerable: false, configurable: true, writable: true, value: makeInterface(MediaStreamTrack)	});
 	Object.defineProperty(window, 'RTCDataChannel'		, { enumerable: false, configurable: true, writable: true, value: makeInterface(RTCDataChannel)		});
+	Object.defineProperty(window, 'RTCStatsReport'		, { enumerable: false, configurable: true, writable: true, value: makeInterface(RTCStatsReport)		});
 	Object.defineProperty(window, 'Promise'			, { enumerable: false, configurable: true, writable: true, value: Promise		});
 	Object.defineProperty(window, 'EventTarget'		, { enumerable: false, configurable: true, writable: true, value: EventTarget		});
 	

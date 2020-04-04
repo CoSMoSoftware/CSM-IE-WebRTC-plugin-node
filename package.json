@@ -12,6 +12,7 @@
   "dependencies": {
     "browserify": "^16.5.0",
     "detect-browser": "^2.0.0",
+    "es6-map": "^0.1.5",
     "promise-polyfill": "^6.1.0"
   },
   "devDependencies": {
