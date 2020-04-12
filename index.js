@@ -55,7 +55,8 @@ if (browser.name === "ie")
 	Object.defineProperty(window, 'RTCStatsReport'		, { enumerable: false, configurable: true, writable: true, value: makeInterface(RTCStatsReport)		});
 	Object.defineProperty(window, 'Promise'			, { enumerable: false, configurable: true, writable: true, value: Promise		});
 	Object.defineProperty(window, 'EventTarget'		, { enumerable: false, configurable: true, writable: true, value: EventTarget		});
-	
+	//Remove after test
+	Object.defineProperty(window, 'VideoRenderer'		, { enumerable: false, configurable: true, writable: true, value: VideoRenderer		});
 
 	//Helper functions to check video nodes
 	function checkNewNode(node) 
