@@ -16,6 +16,7 @@ if (browser.name === "ie")
 	var RTCRtpSender		= require("./lib/RTCRtpSender.js");
 	var RTCDataChannel		= require("./lib/RTCDataChannel.js");
 	var RTCStatsReport		= require("./lib/RTCStatsReport.js");
+	var MediaDeviceInfo		= require("./lib/MediaDeviceInfo.js");
 	var MediaStream			= require("./lib/MediaStream.js");
 	var MediaStreamTrack		= require("./lib/MediaStreamTrack.js");
 	var Promise			= require("promise-polyfill");
@@ -53,6 +54,7 @@ if (browser.name === "ie")
 	Object.defineProperty(window, 'RTCRtpSender'		, { enumerable: false, configurable: true, writable: true, value: makeInterface(MediaStreamTrack)	});
 	Object.defineProperty(window, 'RTCDataChannel'		, { enumerable: false, configurable: true, writable: true, value: makeInterface(RTCDataChannel)		});
 	Object.defineProperty(window, 'RTCStatsReport'		, { enumerable: false, configurable: true, writable: true, value: makeInterface(RTCStatsReport)		});
+	Object.defineProperty(window, 'MediaDeviceInfo'		, { enumerable: false, configurable: true, writable: true, value: makeInterface(MediaDeviceInfo)	});
 	Object.defineProperty(window, 'Promise'			, { enumerable: false, configurable: true, writable: true, value: Promise		});
 	Object.defineProperty(window, 'EventTarget'		, { enumerable: false, configurable: true, writable: true, value: EventTarget		});
 	//Remove after test
